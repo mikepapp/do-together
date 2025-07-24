@@ -15,6 +15,7 @@ interface NavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   notificationCount?: number;
+  activeChatCount?: number;
   profileImage?: string;
   userName?: string;
 }
@@ -23,6 +24,7 @@ const Navigation = ({
   activeTab, 
   onTabChange, 
   notificationCount = 0,
+  activeChatCount = 0,
   profileImage,
   userName = "User"
 }: NavigationProps) => {
@@ -32,10 +34,10 @@ const Navigation = ({
 
   const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
-    { id: 'discover', icon: Search, label: 'Discover' },
-    { id: 'create', icon: Plus, label: 'Create' },
-    { id: 'groups', icon: Users, label: 'Groups' },
-    { id: 'messages', icon: MessageCircle, label: 'Messages' },
+    { id: 'search', icon: Search, label: 'Search' },
+    { id: 'discover', icon: Plus, label: 'Discover' },
+    { id: 'groups', icon: Users, label: 'People' },
+    { id: 'messages', icon: MessageCircle, label: 'Chats', badge: activeChatCount },
   ];
 
   return (
@@ -54,17 +56,22 @@ const Navigation = ({
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Button
-                key={item.id}
-                variant={activeTab === item.id ? "default" : "ghost"}
-                onClick={() => onTabChange(item.id)}
-                className="flex items-center gap-2"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Button>
-            ))}
+          {navItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? "default" : "ghost"}
+              onClick={() => onTabChange(item.id)}
+              className="flex items-center gap-2 relative"
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+              {item.badge && item.badge > 0 && (
+                <Badge className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary">
+                  {item.badge > 99 ? '99+' : item.badge}
+                </Badge>
+              )}
+            </Button>
+          ))}
           </div>
 
           {/* Right side - Notifications & Profile */}
@@ -98,10 +105,15 @@ const Navigation = ({
                 variant={activeTab === item.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onTabChange(item.id)}
-                className="flex flex-col items-center gap-1 h-auto p-2"
+                className="flex flex-col items-center gap-1 h-auto p-2 relative"
               >
                 <item.icon className="h-4 w-4" />
                 <span className="text-xs">{item.label}</span>
+                {item.badge && item.badge > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-primary">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </Badge>
+                )}
               </Button>
             ))}
           </div>

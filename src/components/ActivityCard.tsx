@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Calendar, Heart } from "lucide-react";
+import { Users, MapPin, Calendar, Heart, MessageCircle } from "lucide-react";
 
 interface ActivityCardProps {
   title: string;
@@ -14,7 +14,9 @@ interface ActivityCardProps {
   tags: string[];
   image?: string;
   liked?: boolean;
-  onJoin?: () => void;
+  isActive?: boolean;
+  chatId?: string;
+  onJoinChat?: (chatId: string) => void;
   onLike?: () => void;
 }
 
@@ -29,7 +31,9 @@ const ActivityCard = ({
   tags,
   image,
   liked = false,
-  onJoin,
+  isActive = false,
+  chatId,
+  onJoinChat,
   onLike
 }: ActivityCardProps) => {
   const getCategoryColor = (cat: string) => {
@@ -98,11 +102,13 @@ const ActivityCard = ({
 
       <CardFooter>
         <Button 
-          variant="activity" 
+          variant={isActive ? "secondary" : "activity"} 
           className="w-full"
-          onClick={onJoin}
+          onClick={() => chatId && onJoinChat?.(chatId)}
+          disabled={!chatId}
         >
-          Join Activity
+          <MessageCircle className="h-4 w-4 mr-2" />
+          {isActive ? "Active Chat" : "Join Chat"}
         </Button>
       </CardFooter>
     </Card>

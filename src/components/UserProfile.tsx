@@ -14,8 +14,9 @@ interface UserProfileProps {
   joinedDate: string;
   activitiesJoined: number;
   connectionsCount: number;
-  isConnected?: boolean;
-  onConnect?: () => void;
+  commonActivities?: string[];
+  lastActivity?: string;
+  onViewActivities?: () => void;
   onMessage?: () => void;
 }
 
@@ -29,8 +30,9 @@ const UserProfile = ({
   joinedDate,
   activitiesJoined,
   connectionsCount,
-  isConnected = false,
-  onConnect,
+  commonActivities = [],
+  lastActivity,
+  onViewActivities,
   onMessage
 }: UserProfileProps) => {
   const getInitials = (fullName: string) => {
@@ -73,7 +75,7 @@ const UserProfile = ({
         <p className="text-muted-foreground text-center">{bio}</p>
         
         <div className="flex flex-wrap gap-2 justify-center">
-          {interests.map((interest, index) => (
+          {interests.slice(0, 4).map((interest, index) => (
             <Badge
               key={index}
               className={`${getInterestColor(interest)} text-white border-0`}
@@ -81,7 +83,25 @@ const UserProfile = ({
               {interest}
             </Badge>
           ))}
+          {interests.length > 4 && (
+            <Badge variant="secondary">
+              +{interests.length - 4} more
+            </Badge>
+          )}
         </div>
+
+        {commonActivities.length > 0 && (
+          <div className="bg-primary/5 p-3 rounded-lg">
+            <p className="text-sm font-medium text-center mb-2">Common Activities</p>
+            <div className="flex flex-wrap gap-1 justify-center">
+              {commonActivities.map((activity, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {activity}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-4 py-4 border-t border-border/50">
           <div className="text-center">
@@ -109,12 +129,12 @@ const UserProfile = ({
 
         <div className="flex gap-2">
           <Button
-            variant={isConnected ? "secondary" : "default"}
+            variant="default"
             className="flex-1"
-            onClick={onConnect}
+            onClick={onViewActivities}
           >
-            <UserPlus className="h-4 w-4 mr-2" />
-            {isConnected ? "Connected" : "Connect"}
+            <Users className="h-4 w-4 mr-2" />
+            View Activities
           </Button>
           <Button
             variant="outline"
