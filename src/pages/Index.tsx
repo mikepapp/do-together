@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { User } from "@supabase/supabase-js";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import ActivityCard from "@/components/ActivityCard";
@@ -43,19 +44,52 @@ const Index = () => {
   const [activeChats, setActiveChats] = useState<ActiveChat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) navigate('/auth', { replace: true });
-      else setAuthReady(true);
+      if (!session) {
+        navigate('/auth', { replace: true });
+        setUser(null);
+        setUserProfile(null);
+      } else {
+        setUser(session.user);
+        setAuthReady(true);
+        fetchUserProfile(session.user.id);
+      }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate('/auth', { replace: true });
-      else setAuthReady(true);
+      if (!session) {
+        navigate('/auth', { replace: true });
+      } else {
+        setUser(session.user);
+        setAuthReady(true);
+        fetchUserProfile(session.user.id);
+      }
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      setUserProfile(data);
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
+  };
 
   // Sample data with chat integration
   const sampleActivities = [
@@ -200,7 +234,9 @@ const Index = () => {
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-8">
           <div className="container mx-auto px-4 max-w-2xl">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-4">Welcome to MatchUp!</h1>
+              <h1 className="text-3xl font-bold mb-4">
+                Welcome to MatchUp{userProfile?.display_name ? `, ${userProfile.display_name}` : ''}!
+              </h1>
               <p className="text-muted-foreground">Let's set up your profile to find perfect activity matches.</p>
             </div>
             
@@ -244,6 +280,99 @@ const Index = () => {
       );
     }
 
+    if (activeTab === 'profile') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-8">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-4">Your Profile</h1>
+              <p className="text-muted-foreground">Manage your account and preferences</p>
+            </div>
+            
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Display Name</label>
+                  <p className="text-lg">{userProfile?.display_name || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Email</label>
+                  <p className="text-lg">{user?.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Age</label>
+                  <p className="text-lg">{userProfile?.age || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Bio</label>
+                  <p className="text-lg">{userProfile?.bio || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Member Since</label>
+                  <p className="text-lg">
+                    {userProfile?.created_at 
+                      ? new Date(userProfile.created_at).toLocaleDateString()
+                      : 'Recently joined'
+                    }
+                  </p>
+                </div>
+                <Button variant="outline" className="w-full">
+                  Edit Profile
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'settings') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-8">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-4">Settings</h1>
+              <p className="text-muted-foreground">Customize your MatchUp experience</p>
+            </div>
+            
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Account Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Email Notifications</h3>
+                    <p className="text-sm text-muted-foreground">Receive updates about your activities</p>
+                  </div>
+                  <Button variant="outline" size="sm">Configure</Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Privacy Settings</h3>
+                    <p className="text-sm text-muted-foreground">Control who can see your profile</p>
+                  </div>
+                  <Button variant="outline" size="sm">Manage</Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Activity Preferences</h3>
+                    <p className="text-sm text-muted-foreground">Set your activity interests</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setShowOnboarding(true)}>
+                    Update
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
     if (activeTab === 'search') {
       return (
         <ActivityMatcher
@@ -260,7 +389,9 @@ const Index = () => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Discover Activities</h1>
-                <p className="text-muted-foreground">Activities happening near you</p>
+                <p className="text-muted-foreground">
+                  Activities happening near you{userProfile?.display_name ? `, ${userProfile.display_name}` : ''}
+                </p>
               </div>
               <Button variant="gradient">
                 <Search className="h-4 w-4 mr-2" />
@@ -290,7 +421,9 @@ const Index = () => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">People</h1>
-                <p className="text-muted-foreground">Connect with people who share your interests</p>
+                <p className="text-muted-foreground">
+                  Connect with people who share your interests
+                </p>
               </div>
             </div>
 
@@ -335,7 +468,9 @@ const Index = () => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Your Chats</h1>
-                <p className="text-muted-foreground">Active conversations from your activities</p>
+                <p className="text-muted-foreground">
+                  Active conversations from your activities
+                </p>
               </div>
             </div>
 
@@ -418,7 +553,10 @@ const Index = () => {
           onTabChange={setActiveTab}
           notificationCount={3}
           activeChatCount={activeChats.length}
-          userName="Alex Smith"
+          userName={userProfile?.display_name || user?.email?.split('@')[0] || 'User'}
+          userEmail={user?.email}
+          profileImage={userProfile?.avatar_url}
+          isAuthenticated={!!user}
         />
       )}
       {renderContent()}

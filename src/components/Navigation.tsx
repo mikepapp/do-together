@@ -2,14 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
   Home, 
   Search, 
   Users, 
   MessageCircle, 
   User,
   Bell,
-  Plus
+  Plus,
+  LogOut,
+  Settings
  } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface NavigationProps {
   activeTab: string;
@@ -18,6 +30,8 @@ interface NavigationProps {
   activeChatCount?: number;
   profileImage?: string;
   userName?: string;
+  isAuthenticated?: boolean;
+  userEmail?: string;
 }
 
 const Navigation = ({ 
@@ -26,10 +40,25 @@ const Navigation = ({
   notificationCount = 0,
   activeChatCount = 0,
   profileImage,
-  userName = "User"
+  userName = "User",
+  isAuthenticated = false,
+  userEmail
 }: NavigationProps) => {
+  const { toast } = useToast();
+
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast({ title: "Signed out successfully" });
+      window.location.reload();
+    } catch (err: any) {
+      toast({ title: "Error signing out", description: err.message, variant: "destructive" });
+    }
   };
 
   const navItems = [
@@ -86,15 +115,45 @@ const Navigation = ({
                 </Badge>
               )}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => window.location.assign('/auth')}>
-              Login
-            </Button>
-            <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-              <AvatarImage src={profileImage} alt={userName} />
-              <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
-                {getInitials(userName)}
-              </AvatarFallback>
-            </Avatar>
+            
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="h-8 w-8 ring-2 ring-primary/20 cursor-pointer hover:ring-primary/40 transition-all">
+                    <AvatarImage src={profileImage} alt={userName} />
+                    <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
+                      {getInitials(userName)}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{userName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onTabChange('profile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onTabChange('settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => window.location.assign('/auth')}>
+                Login
+              </Button>
+            )}
           </div>
         </div>
 
