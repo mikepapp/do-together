@@ -12,6 +12,8 @@ import {
   Loader2,
   MessageCircle
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface MatchedActivity {
   id: string;
@@ -106,9 +108,21 @@ const ActivityMatcher = ({ onActivityMatched, onJoinChat }: ActivityMatcherProps
     }, 1500);
   };
 
-  const handleJoinActivity = (activity: MatchedActivity) => {
-    onActivityMatched(activity);
-    onJoinChat(activity.chatId, activity);
+  const handleJoinActivity = async (activity: MatchedActivity) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('search-and-join', {
+        body: {
+          activity_type: activity.category,
+          params: { location: activity.location, date: activity.date },
+          max_size: 6,
+        },
+      });
+      if (error) throw error;
+      onActivityMatched(activity);
+      onJoinChat(data?.group_id || activity.chatId, activity);
+    } catch (err: any) {
+      toast({ title: 'Could not join chat', description: err.message, variant: 'destructive' });
+    }
   };
 
   const getCategoryColor = (category: string) => {

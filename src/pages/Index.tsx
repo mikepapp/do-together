@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import ActivityCard from "@/components/ActivityCard";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ActiveChat {
   chatId: string;
@@ -40,6 +42,20 @@ const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeChats, setActiveChats] = useState<ActiveChat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) navigate('/auth', { replace: true });
+      else setAuthReady(true);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate('/auth', { replace: true });
+      else setAuthReady(true);
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   // Sample data with chat integration
   const sampleActivities = [
@@ -184,7 +200,7 @@ const Index = () => {
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-8">
           <div className="container mx-auto px-4 max-w-2xl">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-4">Welcome to ActivityConnect!</h1>
+              <h1 className="text-3xl font-bold mb-4">Welcome to MatchUp!</h1>
               <p className="text-muted-foreground">Let's set up your profile to find perfect activity matches.</p>
             </div>
             

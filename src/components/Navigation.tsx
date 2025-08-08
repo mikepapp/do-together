@@ -9,7 +9,7 @@ import {
   User,
   Bell,
   Plus
-} from "lucide-react";
+ } from "lucide-react";
 
 interface NavigationProps {
   activeTab: string;
@@ -41,16 +41,16 @@ const Navigation = ({
   ];
 
   return (
-    <nav className="bg-background/95 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
+    <nav className="bg-background/95 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50" aria-label="Main navigation">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AC</span>
+              <span className="text-white font-bold text-sm">MU</span>
             </div>
             <span className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent">
-              ActivityConnect
+              MatchUp
             </span>
           </div>
 
@@ -86,7 +86,9 @@ const Navigation = ({
                 </Badge>
               )}
             </Button>
-            
+            <Button variant="outline" size="sm" onClick={() => window.location.assign('/auth')}>
+              Login
+            </Button>
             <Avatar className="h-8 w-8 ring-2 ring-primary/20">
               <AvatarImage src={profileImage} alt={userName} />
               <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">

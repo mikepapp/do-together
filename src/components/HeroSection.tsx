@@ -22,7 +22,7 @@ const HeroSection = ({ onGetStarted, onExplore }: HeroSectionProps) => {
       <div className="absolute inset-0 z-0">
         <img 
           src={heroImage} 
-          alt="People connecting through activities"
+          alt="MatchUp community connecting through activities"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]" />
@@ -33,14 +33,11 @@ const HeroSection = ({ onGetStarted, onExplore }: HeroSectionProps) => {
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
-            Connect Through
-            <br />
-            Shared Experiences
+            MatchUp: Connect Through Shared Experiences
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Discover people who share your passions. From travel adventures to local sports, 
-            from food experiences to entertainment - find your tribe and create lasting connections.
+            Find people who want to do the same things, at the same time and place. Join a chat instantly when you match.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
